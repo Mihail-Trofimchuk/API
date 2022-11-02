@@ -1,5 +1,6 @@
 import express, { Express } from 'express';
 import { Server } from 'http';
+import { ExeptionFilter } from './errors/exeption.filter';
 import { LoggerService } from './Logger/logger.service';
 import { UserController } from './Users/user.controller';
 export class App {
@@ -8,24 +9,31 @@ export class App {
   port: number;
   logger: LoggerService;
   userController: UserController;
+  exeptionFilter: ExeptionFilter;
 
-  constructor(logger: LoggerService, userController: UserController) {
+  constructor(
+    logger: LoggerService,
+    userController: UserController,
+    exeptionFilter: ExeptionFilter
+  ) {
     this.app = express();
     this.port = 8000;
     this.logger = logger;
     this.userController = userController;
+    this.exeptionFilter = exeptionFilter;
   }
 
-  ueseRoutes() {
+  useRoutes() {
     this.app.use('/users', this.userController.router);
   }
 
+  useExeptionFilters() {
+    this.app.use(this.exeptionFilter.catch.bind(this.exeptionFilter));
+  }
   public async init() {
-    this.ueseRoutes();
-
+    this.useRoutes();
+    this.useExeptionFilters();
     this.server = this.app.listen(this.port);
     this.logger.log(`Сервер запущен на http://localhost:${this.port}`);
   }
 }
-
-// New
